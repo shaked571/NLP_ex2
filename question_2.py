@@ -42,7 +42,7 @@ def train_most_likely_tag(corpus: list) -> dict:
     return probability_map
 
 
-def calculate_most_likely_tag(word_tag_dict):
+def calculate_most_likely_tag(word_tag_dict) -> str:
     return max(word_tag_dict, key=word_tag_dict.get)
 
 
@@ -52,7 +52,6 @@ def most_likely_tag(train_set: list, test_set: list) -> (float, float, float):
     unknown_words_prediction_right = 0
     unknown_words_prediction_wrong = 0
     probability_map = train_most_likely_tag(train_set)
-    test_set = test_set
     for word, tag in test_set:
         if word in probability_map:
             predicted_tag = calculate_most_likely_tag(probability_map[word])
