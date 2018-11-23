@@ -11,16 +11,3 @@ print(len(test_set))
 # for tag_sents in brown.tagged_sents():
 #     print(tag_sents)
 
-
-def foo():
-    print('a')
-
-def shaked():
-    print('king')
-
-def most_likely_tag_baseline():
-    for word_and_tag in train_set:
-        print(word_and_tag)
-
-def bar():
-    print("k")
