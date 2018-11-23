@@ -10,3 +10,7 @@ print(len(test_set))
 
 for tag_sents in brown.tagged_sents():
     print(tag_sents)
+
+def foo():
+    print('a')
+
