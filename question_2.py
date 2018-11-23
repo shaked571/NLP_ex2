@@ -80,24 +80,50 @@ def most_likely_tag(train_set: list, test_set: list) -> (float, float, float):
     total_error_rate = (known_words_prediction_wrong + unknown_words_prediction_wrong) / len(test_set)
     return known_words_error_rate, unknown_words_error_rate, total_error_rate
 
-#
-# def train_bigram_hmm(corpus: list) ->dict():
-#     probability_map = dict()
-#     first_word, first_tag = corpus[0]
-#     next(corpus)
-#     for second_word, second_tag in corpus:
-#         if word in probability_map:
-#             if tag in probability_map[word]:
-#                 probability_map[word][tag] += 1
-#             else:
-#                 probability_map[word][tag] = 1
-#         else:
-#             probability_map[word] = dict()
-#             probability_map[word][tag] = 1
-#     return probability_map
+
+def calculate_emission(corpus: list) -> dict:
+    probability_map = dict()
+    for word, tag in corpus:
+        if tag in probability_map:
+            if word in probability_map[tag]:
+                probability_map[tag][word] += 1
+            else:
+                probability_map[tag][word] = 1
+        else:
+            probability_map[tag] = dict()
+            probability_map[tag][word] = 1
+    for tag, tag_dict in probability_map.items():
+        tag_counts = sum(tag_dict.values())
+        for word in tag_dict:
+            probability_map[tag][word] /= tag_counts
+    return probability_map
+
+
+def calculate_transmission(corpus: list) -> dict():
+    probability_map = dict()
+    first_word, first_tag = corpus[0]
+    for second_word, second_tag in corpus[1:]:
+        if first_tag in probability_map:
+            if second_tag in probability_map[first_tag]:
+                probability_map[first_tag][second_tag] += 1
+            else:
+                probability_map[first_tag][second_tag] = 1
+        else:
+            probability_map[first_tag] = dict()
+            probability_map[first_tag][second_tag] = 1
+        first_tag = second_tag
+    for first_tag, first_tag_dict in probability_map.items():
+        first_tag_counts = sum(first_tag_dict.values())
+        for second_tag in first_tag_dict:
+            probability_map[first_tag][second_tag] /= first_tag_counts
+    return probability_map
 
 
 known_words_error, unknown_words_error, total_error = most_likely_tag(get_word_tag_full_list(get_train_set()), get_word_tag_full_list(get_test_set()))
 print(known_words_error, unknown_words_error, total_error)
 
+emission = calculate_emission(get_word_tag_full_list(get_train_set()))
+transmission = calculate_transmission(get_word_tag_full_list(get_train_set()))
+print("emission: " + str(emission))
+print("transmission: " + str(transmission))
 
