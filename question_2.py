@@ -11,15 +11,15 @@ test_set = news_tagged._pieces[int(len(news_tagged._pieces) * 0.9):]
 
 
 def get_train_set():
-    return train_set
+    return copy.deepcopy(train_set)
 
 
 def get_test_set():
-    return test_set
+    return copy.deepcopy(test_set)
 
 
 def most_likely_tag():
-    my_train_set = copy.deepcopy(get_train_set())
+    my_train_set = get_train_set()
     for file in my_train_set:
         for line in file:
             for couple in line:
