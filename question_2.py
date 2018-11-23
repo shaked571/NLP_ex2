@@ -9,6 +9,18 @@ test_set = news_tagged._pieces[int(len(news_tagged._pieces) * 0.9):]
 # print(len(train_set))
 # print(len(test_set))
 
+def get_word_tag_train_full_list():
+    """
+    :return: the training data as one list of tags
+    """
+    word_tag_list = []
+    my_train_set = get_train_set()
+    for file in my_train_set:
+        for line in file:
+            for couple in line:
+                word_tag_list.append(couple)
+    return word_tag_list
+
 
 def get_train_set():
     return copy.deepcopy(train_set)
@@ -26,3 +38,5 @@ def most_likely_tag():
                 print(couple)
 
 most_likely_tag()
+
+
