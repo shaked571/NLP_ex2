@@ -3,6 +3,8 @@ import operator
 import question_2
 import numpy as np
 
+START = '*'
+
 PREV = "prev"
 
 PROB = "prob"
@@ -48,25 +50,36 @@ def viterbi_algorithm(sentence: list,
                       transition_matrix: dict,
                       emission_matrix: dict) -> list:
     """ 
-    :param initial_prob: the initial probabilities 
+    :param sentence: the corpus 
     :param transition_matrix: for 
     :param emission_matrix: 
     :return: 
     """
     # init
-    viterbi_table = [{}]
+    sentence = ['dummy'] + sentence
+    prob = {(0, START): 1}
+    S = []
+    S[0] = {START}
     states = set([tag_word[0] for tag_word in transition_matrix])
-    observation = set([word_tag[0] for word_tag in emission_matrix])
-    # initial_prob = {}
-    # initial_prob["START"] = {PROB: 1, PREV: None}
-    # for tag in states:
-    #     viterbi_table[0][tag] = {PROB: initial_prob[tag] * emission_matrix[tag], PREV: None}
-    pi = {}
+    for k in range(1, len(sentence)):
+        S[k] = states
 
-    for k in range(len(sentence)):
-        u = -1
-        for v in range(k):
-            pi['k', 'u', 'v']
+    for k in range(1, len(sentence)):
+        max = 0
+
+        for i in range(k - 1):
+            for j in range(k):
+                u = S[i]
+                v = S[j]
+                prob[(k, v)] =
+                # pi['k', 'u', 'v']
             # max_transition_prob = viterbi_table[i - 1][states[0]][PROB]*transition_matrix[]
 
     return []
+    # for tag in states:
+    #     viterbi_table[0][tag] = {PROB: initial_prob[tag] * emission_matrix[tag], PREV: None}
+
+
+# viterbi_table = [{}]
+#
+# observation = set([word_tag[0] for word_tag in emission_matrix])
