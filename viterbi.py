@@ -5,6 +5,8 @@ import numpy as np
 
 START = '*'
 
+END = "STOP"
+
 PREV = "prev"
 
 PROB = "prob"
@@ -64,7 +66,6 @@ def viterbi_algorithm(sentence: list,
     states = set([tag_word[0] for tag_word in transition_matrix])
     for k in range(1, len(sentence)):
         S[k] = states
-
     for k in range(1, len(sentence)):
         for i in range(k - 1):
             max_pi = 0
@@ -81,14 +82,15 @@ def viterbi_algorithm(sentence: list,
                     max_k = k
             bp[(max_k, max_v)] = max_u
             pi[(max_k, max_v)] = max_pi
-
-
-    return []
-
-# for tag in states:
-#     viterbi_table[0][tag] = {PROB: initial_prob[tag] * emission_matrix[tag], PREV: None}
-
-
-# viterbi_table = [{}]
-#
-# observation = set([word_tag[0] for word_tag in emission_matrix])
+    max_set = 0
+    max_v = 0
+    for i in range(1, len(sentence)):
+        v = S[i]
+        if pi[(len(sentence), v) * transition_matrix[v][END]] > max_set:
+            max_set = pi[(len(sentence), v) * transition_matrix[v][END]]
+            max_v = v
+    tags_list = [0] * (len(sentence) + 1)
+    tags_list[len(sentence)] = max_v
+    for k in range(len(sentence), 1):
+        tags_list[k] = bp[k + 1, tags_list[k + 1]]
+    return tags_list

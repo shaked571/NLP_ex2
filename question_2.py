@@ -1,6 +1,7 @@
 import nltk
 from nltk.corpus import brown
 import copy
+import viterbi
 
 # nltk.download('brown')
 news_tagged = brown.tagged_sents(categories='news')  # Download all the data
@@ -138,6 +139,7 @@ def calculate_emission_with_laplace(corpus: list) -> dict:
     return probability_map
 
 
+
 known_words_error, unknown_words_error, total_error = most_likely_tag(get_word_tag_full_list(get_train_set()), get_word_tag_full_list(get_test_set()))
 print(known_words_error, unknown_words_error, total_error)
 
@@ -145,7 +147,6 @@ emission = calculate_emission(get_word_tag_full_list(get_train_set()))
 transmission = calculate_transmission(get_word_tag_full_list(get_train_set()))
 emission_with_laplace = calculate_emission_with_laplace(get_word_tag_full_list(get_train_set()))
 
-print("emission: " + str(emission))
-print("transmission: " + str(transmission))
-print("emission with laplace: " + str(emission_with_laplace))
 
+
+viterbi.viterbi_algorithm(["The", "dog", "ate", "my", "homework", viterbi.END], transmission, emission)
