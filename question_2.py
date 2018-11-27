@@ -3,6 +3,15 @@ from nltk.corpus import brown
 import copy
 import viterbi
 
+START = '*'
+
+END = "STOP"
+
+PREV = "prev"
+
+PROB = "prob"
+
+
 # nltk.download('brown')
 news_tagged = brown.tagged_sents(categories='news')  # Download all the data
 
@@ -138,15 +147,60 @@ def calculate_emission_with_laplace(corpus: list) -> dict:
             probability_map[tag][word] = (probability_map[tag][word] + 1) / (tag_counts + len(words_set))
     return probability_map
 
+def viterbi_algorithm(sentence: list,
+                      transition_matrix: dict,
+                      emission_matrix: dict) -> list:
+    """
+    :param sentence: the corpus
+    :param transition_matrix: for
+    :param emission_matrix:
+    :return:
+    """
+    # init
+    sentence = ['dummy'] + sentence
+    pi = {(0, START): 1}
+    bp = {}
+    S = [set([]) for i in range(len(sentence))]
+    S[0].add(START)
+    states = set([tag_word[0] for tag_word in transition_matrix])
+    for k in range(1, len(sentence)):
+        S[k] = states
+    for k in range(1, len(sentence)):
+        for i in range(k - 1):
+            max_pi = 0
+            max_v = 0
+            max_k = 0
+            max_u = 0
+            for j in range(k):
+                u = S[i]
+                v = S[j]
+                if sentence[k] not in emission_matrix[v]:
+                    emission_matrix[v][sentence[k]] = 0.001
+                if pi[(k - 1, u)] * transition_matrix[u][v] * emission_matrix[v][sentence[k]] > max_pi:
+                    max_pi = pi[(k - 1, u)] * transition_matrix[u][v] * emission_matrix[v][sentence[k]]
+                    max_u = u
+                    max_v = v
+                    max_k = k
+            bp[(max_k, max_v)] = max_u
+            pi[(max_k, max_v)] = max_pi
+    max_set = 0
+    max_v = 0
+    for i in range(1, len(sentence)):
+        v = S[i]
+        if pi[(len(sentence), v)] * transition_matrix[v][END] > max_set:
+            max_set = pi[(len(sentence), v)] * transition_matrix[v][END]
+            max_v = v
+    tags_list = [0] * (len(sentence) + 1)
+    tags_list[len(sentence)] = max_v
+    for k in range(len(sentence), 1):
+        tags_list[k] = bp[k + 1, tags_list[k + 1]]
+    return tags_list
 
 
-known_words_error, unknown_words_error, total_error = most_likely_tag(get_word_tag_full_list(get_train_set()), get_word_tag_full_list(get_test_set()))
-print(known_words_error, unknown_words_error, total_error)
+# known_words_error, unknown_words_error, total_error = most_likely_tag(get_word_tag_full_list(get_train_set()), get_word_tag_full_list(get_test_set()))
+# print(known_words_error, unknown_words_error, total_error)
 
 emission = calculate_emission(get_word_tag_full_list(get_train_set()))
 transmission = calculate_transmission(get_word_tag_full_list(get_train_set()))
-emission_with_laplace = calculate_emission_with_laplace(get_word_tag_full_list(get_train_set()))
-
-
-
-viterbi.viterbi_algorithm(["The", "dog", "ate", "my", "homework", viterbi.END], transmission, emission)
+# emission_with_laplace = calculate_emission_with_laplace(get_word_tag_full_list(get_train_set()))
+viterbi_algorithm(["The", "dog", "ate", "my", "homework", END], transmission, emission)
