@@ -166,14 +166,12 @@ def viterbi_algorithm(sentence: list,
     for k in range(1, len(sentence)):
         S[k] = states
     for k in range(1, len(sentence)):
-        for i in range(k - 1):
+        for u in S[k - 1]:
             max_pi = 0
             max_v = 0
             max_k = 0
             max_u = 0
-            for j in range(k):
-                u = S[i]
-                v = S[j]
+            for v in S[k]:
                 if sentence[k] not in emission_matrix[v]:
                     emission_matrix[v][sentence[k]] = 0.001
                 if pi[(k - 1, u)] * transition_matrix[u][v] * emission_matrix[v][sentence[k]] > max_pi:
