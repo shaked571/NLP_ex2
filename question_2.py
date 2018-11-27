@@ -162,7 +162,7 @@ def viterbi_algorithm(sentence: list,
     bp = {}
     S = [set([]) for i in range(len(sentence))]
     S[0].add(START)
-    states = set([tag_word[0] for tag_word in transition_matrix])
+    states = set([tag_word for tag_word in transition_matrix])
     for k in range(1, len(sentence)):
         S[k] = states
     for k in range(1, len(sentence)):
@@ -172,21 +172,28 @@ def viterbi_algorithm(sentence: list,
             for u in S[k - 1]:
                 if sentence[k] not in emission_matrix[v]:  ## Todo: if a word wasn't in the corpus then e(x|y) = 0
                     emission_matrix[v][sentence[k]] = 0
+                if v not in transition_matrix[u]:
+                    transition_matrix[u][v] = 0
                 if pi[(k - 1, u)] * transition_matrix[u][v] * emission_matrix[v][sentence[k]] > max_pi:
                     max_pi = pi[(k - 1, u)] * transition_matrix[u][v] * emission_matrix[v][sentence[k]]
                     max_u = u
+                    print("max pi: " + str(max_pi))
+                    print("max u for v: " + u + " " + v)
             bp[(k, v)] = max_u
             pi[(k, v)] = max_pi
     max_set = 0
     max_v = 0
-    for i in range(1, len(sentence)):
-        v = S[i]
-        if pi[(len(sentence), v)] * transition_matrix[v][END] > max_set:
-            max_set = pi[(len(sentence), v)] * transition_matrix[v][END]
+    for v in S[1]:
+        if END not in transition_matrix[v]:
+            transition_matrix[v][END] = 0
+        if (len(sentence) - 1, v) not in pi:
+            pi[(len(sentence) - 1, v)] = 0
+        if pi[(len(sentence) - 1, v)] * transition_matrix[v][END] > max_set:
+            max_set = pi[(len(sentence) - 1, v)] * transition_matrix[v][END]
             max_v = v
-    tags_list = [0] * (len(sentence) + 1)
-    tags_list[len(sentence)] = max_v
-    for k in range(len(sentence), 1):
+    tags_list = [''] * (len(sentence))
+    tags_list[len(sentence) - 1] = max_v
+    for k in range(len(sentence) - 2, -1, -1):
         tags_list[k] = bp[k + 1, tags_list[k + 1]]
     return tags_list
 
@@ -197,4 +204,4 @@ def viterbi_algorithm(sentence: list,
 emission = calculate_emission(get_word_tag_full_list(get_train_set()))
 transmission = calculate_transmission(get_word_tag_full_list(get_train_set()))
 # emission_with_laplace = calculate_emission_with_laplace(get_word_tag_full_list(get_train_set()))
-viterbi_algorithm(["The", "dog", "ate", "my", "homework", END], transmission, emission)
+viterbi_algorithm(["The", "dog", "ate", "my", "homework"], transmission, emission)
