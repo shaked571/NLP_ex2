@@ -61,11 +61,9 @@ def viterbi_algorithm(sentence: list,
     sentence = ['dummy'] + sentence
     pi = {(0, START): 1}
     bp = {}
-    S = []
-    S[0] = {START}
-    states = set([tag_word[0] for tag_word in transition_matrix])
-    for k in range(1, len(sentence)):
-        S[k] = states
+    S = [] * 2
+    S[0] = [START]
+    S[1] = list(tag_word[0] for tag_word in transition_matrix)
     for k in range(1, len(sentence)):
         for i in range(k - 1):
             max_pi = 0
@@ -73,8 +71,8 @@ def viterbi_algorithm(sentence: list,
             max_k = 0
             max_u = 0
             for j in range(k):
-                u = S[i]
-                v = S[j]
+                u = S[1][i]
+                v = S[1][j]
                 if pi[(k - 1, u) * transition_matrix[u][v] * emission_matrix[v][sentence[k]]] > max_pi:
                     max_pi = pi[(k - 1, u) * transition_matrix[u][v] * emission_matrix[v][sentence[k]]]
                     max_u = u

@@ -5,7 +5,7 @@ import viterbi
 
 START = '*'
 
-END = "STOP"
+END = "."
 
 PREV = "prev"
 
@@ -157,7 +157,7 @@ def viterbi_algorithm(sentence: list,
     :return:
     """
     # init
-    sentence = ['dummy'] + sentence
+    sentence = ['START'] + sentence
     pi = {(0, START): 1}
     bp = {}
     S = [set([]) for i in range(len(sentence))]
@@ -166,21 +166,17 @@ def viterbi_algorithm(sentence: list,
     for k in range(1, len(sentence)):
         S[k] = states
     for k in range(1, len(sentence)):
-        for u in S[k - 1]:
+        for v in S[k]:
             max_pi = 0
-            max_v = 0
-            max_k = 0
             max_u = 0
-            for v in S[k]:
-                if sentence[k] not in emission_matrix[v]:
-                    emission_matrix[v][sentence[k]] = 0.001
+            for u in S[k - 1]:
+                if sentence[k] not in emission_matrix[v]:  ## Todo: if a word wasn't in the corpus then e(x|y) = 0
+                    emission_matrix[v][sentence[k]] = 0
                 if pi[(k - 1, u)] * transition_matrix[u][v] * emission_matrix[v][sentence[k]] > max_pi:
                     max_pi = pi[(k - 1, u)] * transition_matrix[u][v] * emission_matrix[v][sentence[k]]
                     max_u = u
-                    max_v = v
-                    max_k = k
-            bp[(max_k, max_v)] = max_u
-            pi[(max_k, max_v)] = max_pi
+            bp[(k, v)] = max_u
+            pi[(k, v)] = max_pi
     max_set = 0
     max_v = 0
     for i in range(1, len(sentence)):
