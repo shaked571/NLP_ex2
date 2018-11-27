@@ -2,6 +2,7 @@ import nltk
 from nltk.corpus import brown
 import copy
 import viterbi
+import random
 
 START = '*'
 
@@ -163,6 +164,7 @@ def viterbi_algorithm(sentence: list,
     S = [set([]) for i in range(len(sentence))]
     S[0].add(START)
     states = set([tag_word for tag_word in transition_matrix])
+    states.add('NN')
     for k in range(1, len(sentence)):
         S[k] = states
     for k in range(1, len(sentence)):
@@ -174,15 +176,19 @@ def viterbi_algorithm(sentence: list,
                     emission_matrix[v][sentence[k]] = 0
                 if v not in transition_matrix[u]:
                     transition_matrix[u][v] = 0
+
                 if pi[(k - 1, u)] * transition_matrix[u][v] * emission_matrix[v][sentence[k]] > max_pi:
                     max_pi = pi[(k - 1, u)] * transition_matrix[u][v] * emission_matrix[v][sentence[k]]
                     max_u = u
                     print("max pi: " + str(max_pi))
                     print("max u for v: " + u + " " + v)
-            bp[(k, v)] = max_u
+            if max_pi == 0:
+                bp[(k, v)] = random.sample(S[k], 1)
+            else:
+                bp[(k, v)] = max_u
             pi[(k, v)] = max_pi
     max_set = 0
-    max_v = 0
+    max_v = ''
     for v in S[1]:
         if END not in transition_matrix[v]:
             transition_matrix[v][END] = 0
@@ -204,4 +210,4 @@ def viterbi_algorithm(sentence: list,
 emission = calculate_emission(get_word_tag_full_list(get_train_set()))
 transmission = calculate_transmission(get_word_tag_full_list(get_train_set()))
 # emission_with_laplace = calculate_emission_with_laplace(get_word_tag_full_list(get_train_set()))
-viterbi_algorithm(["The", "dog", "ate", "my", "homework"], transmission, emission)
+viterbi_algorithm(["The", "jury", "said", "it", "did"], transmission, emission)
