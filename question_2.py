@@ -243,26 +243,66 @@ def calculate_with_viterbi_laplace():  # d.2
     return error_rate
 
 
-def get_set_of_pseudo_words(train_set: list, test_set: list):  # e.1
+def smooth_with_pseudo_words(train_set: list, test_set: list):  # e.1
     words_counts = dict()
     for word, tag in train_set:
         if word in words_counts:
-            words_counts += 1
+            words_counts[word] += 1
         else:
             words_counts[word] = 1
-    unknown_words = list()
+    low_frequency_words = list()
     for word, tag in test_set:
         if word not in words_counts:
-            unknown_words.append(word)
-    low_frequency_words = list()
-    for key in train_set:
-        if words_counts[key] < 3:
+            low_frequency_words.append(word)
+    for key in words_counts:
+        if words_counts[key] < 5:
             low_frequency_words.append(key)
-    return unknown_words, low_frequency_words
+    pseudo_words = dict()
+    for word in low_frequency_words:
+        if word[0].isupper():
+            pseudo_words[word] = word.lower()
+        elif word[0].isdigit():
+            pseudo_words[word] = 'Number'
+        elif word[0] == '$':
+            pseudo_words[word] = 'Money'
+        elif word[0] == ',':
+            pseudo_words[word] = ','
+        else:
+            pseudo_words[word] = 'other'
+    new_train_set = list()
+    for word, tag in train_set:
+        if word in pseudo_words:
+            new_train_set.append((pseudo_words[word], tag))
+        else:
+            new_train_set.append((word, tag))
+    new_test_set = list()
+    for word, tag in test_set:
+        if word in pseudo_words:
+            new_test_set.append((pseudo_words[word], tag))
+        else:
+            new_test_set.append((word, tag))
+    return new_train_set, new_test_set
 
 
+def calculate_with_viterbi_and_pseudo_words():  # e.2
+    smoothed_train_set, smoothed_test_set = smooth_with_pseudo_words(get_word_tag_full_list(get_train_set()), get_word_tag_full_list(get_test_set()))
+    emission = calculate_emission(smoothed_train_set)
+    transmission = calculate_transmission(smoothed_train_set)
+    words_in_line = list()
+    correct_tags = list()
+    for word, tag in smoothed_test_set:
+        words_in_line.append(word)
+        correct_tags.append(tag)
+    predicted_tags = viterbi_algorithm(words_in_line, transmission, emission)
+    num_of_mistakes = 0
+    for i in range(len(predicted_tags)):
+        if predicted_tags[i] != correct_tags[i]:
+            num_of_mistakes += 1
+    error_rate = num_of_mistakes / len(predicted_tags)
+    return error_rate
 
 
+train_set, test_set = smooth_with_pseudo_words(get_word_tag_full_list(get_train_set()), get_word_tag_full_list(get_test_set()))
 
 # known_words_error, unknown_words_error, total_error = most_likely_tag(get_word_tag_full_list(get_train_set()), get_word_tag_full_list(get_test_set()))
 # print(known_words_error, unknown_words_error, total_error)
@@ -271,3 +311,4 @@ emission = calculate_emission(get_word_tag_full_list(get_train_set()))
 transmission = calculate_transmission(get_word_tag_full_list(get_train_set()))
 emission_with_laplace = calculate_emission_with_laplace(get_word_tag_full_list(get_train_set()), get_word_tag_full_list(get_test_set()))
 viterbi_algorithm(["The", "dog", "ate", "my", "homework"], transmission, emission)
+
