@@ -171,40 +171,74 @@ def viterbi_algorithm(sentence: list,
     states = set([tag_word for tag_word in transition_matrix])
     for k in range(1, len(sentence)):
         S[k] = states
+    did_all_the_word_appeared, last_good_word_index = viterbi_recursion(S, bp, emission_matrix, pi, sentence,
+                                                                        transition_matrix)
+    max_set, max_v = decide_last_word_tag(S, last_good_word_index, pi, transition_matrix)
+    tags_list = [''] * last_good_word_index
+    tags_list[last_good_word_index - 1] = max_v
+    for k in range(last_good_word_index - 2, -1, -1):
+        print('k ' +str(k))
+        tags_list[k] = (bp[k + 1, tags_list[k + 1]])
+    if did_all_the_word_appeared:
+        return tags_list
+    else:
+        all_tags = S[1]
+        return tags_list + random.sample(all_tags, len(sentence) - last_good_word_index)
+
+
+def decide_last_word_tag(S, last_good_word_index, pi, transition_matrix):
+    max_set = 0
+    all_tags = S[1]
+    max_v = random.sample(all_tags, 1)[0]  # define the tag as random by default - would be replace is there is better
+    sentence_len = last_good_word_index
+    for v in all_tags:
+        if END not in transition_matrix[v] or (sentence_len - 1, v) not in pi:
+            continue
+        if pi[(sentence_len - 1, v)] * transition_matrix[v][END] > max_set:
+            max_set = pi[(sentence_len - 1, v)] * transition_matrix[v][END]
+            max_v = v
+
+    return max_set, max_v
+
+
+
+def viterbi_recursion(S, bp, emission_matrix, pi, sentence, transition_matrix):
+    """
+
+    :param S:
+    :param bp:
+    :param emission_matrix:
+    :param pi:
+    :param sentence:
+    :param transition_matrix:
+    :return: If all the word appreard, the last word that was good (len of sentence if all them)
+    """
     for k in range(1, len(sentence)):
+        did_word_k_appeared = False
         for v in S[k]:
             max_pi = 0
             max_u = 0
             for u in S[k - 1]:
-                if sentence[k] not in emission_matrix[v]:  ## Todo: if a word wasn't in the corpus then e(x|y) = 0
+                if sentence[k] not in emission_matrix[v]:  # Todo: if a word wasn't in the corpus then e(x|y) = 0
                     emission_matrix[v][sentence[k]] = 0
                 if v not in transition_matrix[u]:
                     transition_matrix[u][v] = 0
+
                 if pi[(k - 1, u)] * transition_matrix[u][v] * emission_matrix[v][sentence[k]] > max_pi:
+                    did_word_k_appeared = True
                     max_pi = pi[(k - 1, u)] * transition_matrix[u][v] * emission_matrix[v][sentence[k]]
                     max_u = u
                     print("max pi: " + str(max_pi))
                     print("max u for v: " + u + " " + v)
             if max_pi == 0:
-                bp[(k, v)] = random.sample(S[k], 1)
+                bp[(k, v)] = random.sample(S[k], 1)[0]
             else:
                 bp[(k, v)] = max_u
             pi[(k, v)] = max_pi
-    max_set = 0
-    max_v = 0
-    for v in S[1]:
-        if END not in transition_matrix[v]:
-            transition_matrix[v][END] = 0
-        if (len(sentence) - 1, v) not in pi:
-            pi[(len(sentence) - 1, v)] = 0
-        if pi[(len(sentence) - 1, v)] * transition_matrix[v][END] > max_set:
-            max_set = pi[(len(sentence) - 1, v)] * transition_matrix[v][END]
-            max_v = v
-    tags_list = [''] * (len(sentence))
-    tags_list[len(sentence) - 1] = max_v
-    for k in range(len(sentence) - 2, -1, -1):
-        tags_list[k] = bp[k + 1, tags_list[k + 1]]
-    return tags_list
+        if not did_word_k_appeared:
+            return did_word_k_appeared, k
+
+    return True, len(sentence)
 
 
 def calculate_with_viterbi():  # c.3
@@ -309,6 +343,6 @@ train_set, test_set = smooth_with_pseudo_words(get_word_tag_full_list(get_train_
 
 emission = calculate_emission(get_word_tag_full_list(get_train_set()))
 transmission = calculate_transmission(get_word_tag_full_list(get_train_set()))
-emission_with_laplace = calculate_emission_with_laplace(get_word_tag_full_list(get_train_set()), get_word_tag_full_list(get_test_set()))
-viterbi_algorithm(["The", "dog", "ate", "my", "homework"], transmission, emission)
-
+# emission_with_laplace = calculate_emission_with_laplace(get_word_tag_full_list(get_train_set()), get_word_tag_full_list(get_test_set()))
+a = viterbi_algorithm(["The", "jury", "uykgiuguyg", "it", "did"], transmission, emission)
+print(a)
