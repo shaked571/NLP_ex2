@@ -177,7 +177,6 @@ def viterbi_algorithm(sentence: list,
     tags_list = [''] * last_good_word_index
     tags_list[last_good_word_index - 1] = max_v
     for k in range(last_good_word_index - 2, -1, -1):
-        print('k ' +str(k))
         tags_list[k] = (bp[k + 1, tags_list[k + 1]])
     if did_all_the_word_appeared:
         tags_list.pop(0)
@@ -240,8 +239,6 @@ def viterbi_recursion(S, bp, emission_matrix, pi, sentence, transition_matrix):
                     did_word_k_appeared = True
                     max_pi = pi[(k - 1, u)] * transition_matrix[u][v] * emission_matrix[v][sentence[k]]
                     max_u = u
-                    print("max pi: " + str(max_pi))
-                    print("max u for v: " + u + " " + v)
             if max_pi == 0:
                 bp[(k, v)] = random.sample(S[k], 1)[0]
             else:
@@ -263,7 +260,6 @@ def calculate_with_viterbi():  # c.3
     for file in test_set:
         num_of_line = 0
         for line in file:
-            print("the line num " + str(num_of_line))
             num_of_line = num_of_line + 1
             correct_tags, words_in_line = make_line_data_for_viterbi(line)
             predicted_tags = viterbi_algorithm(words_in_line, transmission, emission)
@@ -286,20 +282,24 @@ def make_line_data_for_viterbi(line):
 
 
 def calculate_with_viterbi_laplace():  # d.2
-    test_set = get_word_tag_full_list(get_test_set())
-    emission = calculate_emission_with_laplace(get_word_tag_full_list(get_train_set()))
-    transmission = calculate_transmission(get_word_tag_full_list(get_train_set()))
-    words_in_line = list()
-    correct_tags = list()
-    for word, tag in test_set:
-        words_in_line.append(word)
-        correct_tags.append(tag)
-    predicted_tags = viterbi_algorithm(words_in_line, transmission, emission)
+    test_set = get_test_set()
+    train_set = get_test_set()
+    emission = calculate_emission_with_laplace(train_set, test_set)
+    transmission = calculate_transmission(train_set)
     num_of_mistakes = 0
-    for i in range(len(predicted_tags)):
-        if predicted_tags[i] != correct_tags[i]:
-            num_of_mistakes += 1
-    error_rate = num_of_mistakes / len(predicted_tags)
+    total_len = 0
+    for file in test_set:
+        num_of_line = 0
+        for line in file:
+            num_of_line = num_of_line + 1
+            correct_tags, words_in_line = make_line_data_for_viterbi(line)
+            predicted_tags = viterbi_algorithm(words_in_line, transmission, emission)
+            total_len = total_len + len(predicted_tags)
+            for i in range(len(predicted_tags)):
+                if predicted_tags[i] != correct_tags[i]:
+                    num_of_mistakes += 1
+
+    error_rate = num_of_mistakes / total_len
     return error_rate
 
 
@@ -348,52 +348,59 @@ def calculate_with_viterbi_and_pseudo_words():  # e.2
     smoothed_train_set, smoothed_test_set = smooth_with_pseudo_words(get_word_tag_full_list(get_train_set()), get_word_tag_full_list(get_test_set()))
     emission = calculate_emission(smoothed_train_set)
     transmission = calculate_transmission(smoothed_train_set)
-    words_in_line = list()
-    correct_tags = list()
-    for word, tag in smoothed_test_set:
-        words_in_line.append(word)
-        correct_tags.append(tag)
-    predicted_tags = viterbi_algorithm(words_in_line, transmission, emission)
     num_of_mistakes = 0
-    for i in range(len(predicted_tags)):
-        if predicted_tags[i] != correct_tags[i]:
-            num_of_mistakes += 1
-    error_rate = num_of_mistakes / len(predicted_tags)
+    total_len = 0
+    for file in smoothed_test_set:
+        num_of_line = 0
+        for line in file:
+            num_of_line = num_of_line + 1
+            correct_tags, words_in_line = make_line_data_for_viterbi(line)
+            predicted_tags = viterbi_algorithm(words_in_line, transmission, emission)
+            total_len = total_len + len(predicted_tags)
+            for i in range(len(predicted_tags)):
+                if predicted_tags[i] != correct_tags[i]:
+                    num_of_mistakes += 1
+
+    error_rate = num_of_mistakes / total_len
     return error_rate
 
-def calculate_matrix(error_b2, error_c3, error_d2): #e.3
-    pseudo_words_error_rate = calculate_with_viterbi_and_pseudo_words()
-    print("the error rate of b2 is: "+ str(error_b2) +
-          "the error rate of c3 is: "+ str(error_c3) +
-          "the error rate of d2 is: "+ str(error_d2) +
-          "the error rate of e3 is: "+ str(pseudo_words_error_rate))
-    pseudo_words_matrix = calculate_pseudo_words_matrix()
-    addon_smoothing_matrix = calculate_addon_smoothing_matrix()
+# def calculate_matrix(error_b2, error_c3, error_d2): #e.3
+#     pseudo_words_error_rate = calculate_with_viterbi_and_pseudo_words()
+#     print("the error rate of b2 is: "+ str(error_b2) +
+#           "the error rate of c3 is: "+ str(error_c3) +
+#           "the error rate of d2 is: "+ str(error_d2) +
+#           "the error rate of e3 is: "+ str(pseudo_words_error_rate))
+#     pseudo_words_matrix = calculate_pseudo_words_matrix()
+#     addon_smoothing_matrix = calculate_addon_smoothing_matrix()
 
-def calculate_pseudo_words_matrix():
-    # TODO
+# def calculate_pseudo_words_matrix():
+#     # TODO
+#
+# def calculate_addon_smoothing_matrix():
+#      #TODO
 
-def calculate_addon_smoothing_matrix():
-     #TODO
-# train_set, test_set = smooth_with_pseudo_words(get_word_tag_full_list(get_train_set()), get_word_tag_full_list(get_test_set()))
+
 
 # known_words_error, unknown_words_error, total_error = most_likely_tag(get_word_tag_full_list(get_train_set()), get_word_tag_full_list(get_test_set()))
 # print(known_words_error, unknown_words_error, total_error)
 
-# emission = calculate_emission(get_word_tag_full_list(get_train_set()))
-# transmission = calculate_transmission(get_word_tag_full_list(get_train_set()))
-# emission_with_laplace = calculate_emission_with_laplace(get_word_tag_full_list(get_train_set()), get_word_tag_full_list(get_test_set()))
-# Run viterbi on the test set:
 
+viterbi = calculate_with_viterbi()
+# viterbi_with_laplace = calculate_with_viterbi()
+# viterbi_with_pseudo = calculate_with_viterbi_and_pseudo_words()
+
+print("viterbi: " + str(viterbi))
+# print("viterbi with laplace: " + str(viterbi_with_laplace))
+# print("viterbi with pseudo: " + str(viterbi_with_pseudo))
 
 
 
 
 # a = viterbi_algorithm(, transmission, emission_with_laplace)
 # print(a)
-if __name__ == '__main__':
+# if __name__ == '__main__':
     # emission = calculate_emission(get_word_tag_full_list(get_train_set()))
     # transmission = calculate_transmission(get_word_tag_full_list(get_train_set()))
     # print(viterbi_algorithm(["The","I","am"],transmission,emission))
-    print('strat')
-    print(calculate_with_viterbi())
+    # print('strat')
+    # print(calculate_with_viterbi())
