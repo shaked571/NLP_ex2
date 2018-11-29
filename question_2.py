@@ -1,8 +1,8 @@
 import nltk
 from nltk.corpus import brown
 import copy
-import viterbi
 import random
+import numpy as np
 
 START = '*'
 
@@ -180,16 +180,28 @@ def viterbi_algorithm(sentence: list,
         print('k ' +str(k))
         tags_list[k] = (bp[k + 1, tags_list[k + 1]])
     if did_all_the_word_appeared:
+        tags_list.pop(0)
         return tags_list
     else:
         all_tags = S[1]
-        return tags_list + random.sample(all_tags, len(sentence) - last_good_word_index)
+        num_of_random_tags = len(sentence) - last_good_word_index
+        return_list = tags_list + get_random_tags(all_tags, num_of_random_tags)
+        return_list.pop(0)
+        return return_list
+
+
+def get_random_tags(all_tags, num_of_random_tags):
+    rand_tags = []
+    for i in range(num_of_random_tags):
+        rand_tags = rand_tags + random.sample(all_tags, 1)
+
+    return rand_tags
 
 
 def decide_last_word_tag(S, last_good_word_index, pi, transition_matrix):
     max_set = 0
     all_tags = S[1]
-    max_v = random.sample(all_tags, 1)[0]  # define the tag as random by default - would be replace is there is better
+    max_v = random.sample(all_tags,1)[0] # define the tag as random by default - would be replace is there is better
     sentence_len = last_good_word_index
     for v in all_tags:
         if END not in transition_matrix[v] or (sentence_len - 1, v) not in pi:
@@ -242,19 +254,22 @@ def viterbi_recursion(S, bp, emission_matrix, pi, sentence, transition_matrix):
 
 
 def calculate_with_viterbi():  # c.3
-    test_set = get_word_tag_full_list(get_test_set())
+    test_set = get_test_set()
     emission = calculate_emission(get_word_tag_full_list(get_train_set()))
     transmission = calculate_transmission(get_word_tag_full_list(get_train_set()))
     words_in_line = list()
     correct_tags = list()
-    for word, tag in test_set:
-        words_in_line.append(word)
-        correct_tags.append(tag)
-    predicted_tags = viterbi_algorithm(words_in_line, transmission, emission)
     num_of_mistakes = 0
-    for i in range(len(predicted_tags)):
-        if predicted_tags[i] != correct_tags[i]:
-            num_of_mistakes += 1
+    for file in test_set:
+        for line in file:
+            for word, tag in line:
+                words_in_line.append(word)
+                correct_tags.append(tag)
+                predicted_tags = viterbi_algorithm(words_in_line, transmission, emission)
+
+            for i in range(len(predicted_tags)):
+                if predicted_tags[i] != correct_tags[i]:
+                    num_of_mistakes += 1
     error_rate = num_of_mistakes / len(predicted_tags)
     return error_rate
 
@@ -336,13 +351,24 @@ def calculate_with_viterbi_and_pseudo_words():  # e.2
     return error_rate
 
 
-train_set, test_set = smooth_with_pseudo_words(get_word_tag_full_list(get_train_set()), get_word_tag_full_list(get_test_set()))
+# train_set, test_set = smooth_with_pseudo_words(get_word_tag_full_list(get_train_set()), get_word_tag_full_list(get_test_set()))
 
 # known_words_error, unknown_words_error, total_error = most_likely_tag(get_word_tag_full_list(get_train_set()), get_word_tag_full_list(get_test_set()))
 # print(known_words_error, unknown_words_error, total_error)
 
-emission = calculate_emission(get_word_tag_full_list(get_train_set()))
-transmission = calculate_transmission(get_word_tag_full_list(get_train_set()))
+# emission = calculate_emission(get_word_tag_full_list(get_train_set()))
+# transmission = calculate_transmission(get_word_tag_full_list(get_train_set()))
 # emission_with_laplace = calculate_emission_with_laplace(get_word_tag_full_list(get_train_set()), get_word_tag_full_list(get_test_set()))
-a = viterbi_algorithm(["The", "jury", "uykgiuguyg", "it", "did"], transmission, emission)
-print(a)
+# Run viterbi on the test set:
+
+
+
+
+
+# a = viterbi_algorithm(, transmission, emission_with_laplace)
+# print(a)
+if __name__ == '__main__':
+    # emission = calculate_emission(get_word_tag_full_list(get_train_set()))
+    # transmission = calculate_transmission(get_word_tag_full_list(get_train_set()))
+    # print(viterbi_algorithm(["The","I","am"],transmission,emission))
+    print(calculate_with_viterbi())
