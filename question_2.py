@@ -361,7 +361,20 @@ def calculate_with_viterbi_and_pseudo_words():  # e.2
     error_rate = num_of_mistakes / len(predicted_tags)
     return error_rate
 
+def calculate_matrix(error_b2, error_c3, error_d2): #e.3
+    pseudo_words_error_rate = calculate_with_viterbi_and_pseudo_words()
+    print("the error rate of b2 is: "+ str(error_b2) +
+          "the error rate of c3 is: "+ str(error_c3) +
+          "the error rate of d2 is: "+ str(error_d2) +
+          "the error rate of e3 is: "+ str(pseudo_words_error_rate))
+    pseudo_words_matrix = calculate_pseudo_words_matrix()
+    addon_smoothing_matrix = calculate_addon_smoothing_matrix()
 
+def calculate_pseudo_words_matrix():
+    # TODO
+
+def calculate_addon_smoothing_matrix():
+     #TODO
 # train_set, test_set = smooth_with_pseudo_words(get_word_tag_full_list(get_train_set()), get_word_tag_full_list(get_test_set()))
 
 # known_words_error, unknown_words_error, total_error = most_likely_tag(get_word_tag_full_list(get_train_set()), get_word_tag_full_list(get_test_set()))
