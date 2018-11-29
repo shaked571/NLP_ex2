@@ -259,17 +259,20 @@ def calculate_with_viterbi():  # c.3
     transmission = calculate_transmission(get_word_tag_full_list(get_train_set()))
 
     num_of_mistakes = 0
+    total_len = 0
     for file in test_set:
-        for j, line in enumerate(file):
-            print("the line num " + str(j) + "/" + str(len(file)))
-
+        num_of_line = 0
+        for line in file:
+            print("the line num " + str(num_of_line))
+            num_of_line = num_of_line + 1
             correct_tags, words_in_line = make_line_data_for_viterbi(line)
             predicted_tags = viterbi_algorithm(words_in_line, transmission, emission)
-
+            total_len = total_len + len(predicted_tags)
             for i in range(len(predicted_tags)):
                 if predicted_tags[i] != correct_tags[i]:
                     num_of_mistakes += 1
-    error_rate = num_of_mistakes / len(predicted_tags)
+
+    error_rate = num_of_mistakes / total_len
     return error_rate
 
 
