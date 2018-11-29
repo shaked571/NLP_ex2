@@ -257,21 +257,29 @@ def calculate_with_viterbi():  # c.3
     test_set = get_test_set()
     emission = calculate_emission(get_word_tag_full_list(get_train_set()))
     transmission = calculate_transmission(get_word_tag_full_list(get_train_set()))
-    words_in_line = list()
-    correct_tags = list()
+
     num_of_mistakes = 0
     for file in test_set:
-        for line in file:
-            for word, tag in line:
-                words_in_line.append(word)
-                correct_tags.append(tag)
-                predicted_tags = viterbi_algorithm(words_in_line, transmission, emission)
+        for j, line in enumerate(file):
+            print("the line num " + str(j) + "/" + str(len(file)))
+
+            correct_tags, words_in_line = make_line_data_for_viterbi(line)
+            predicted_tags = viterbi_algorithm(words_in_line, transmission, emission)
 
             for i in range(len(predicted_tags)):
                 if predicted_tags[i] != correct_tags[i]:
                     num_of_mistakes += 1
     error_rate = num_of_mistakes / len(predicted_tags)
     return error_rate
+
+
+def make_line_data_for_viterbi(line):
+    words_in_line = list()
+    correct_tags = list()
+    for word, tag in line:
+        words_in_line.append(word)
+        correct_tags.append(tag)
+    return correct_tags, words_in_line
 
 
 def calculate_with_viterbi_laplace():  # d.2
@@ -371,4 +379,5 @@ if __name__ == '__main__':
     # emission = calculate_emission(get_word_tag_full_list(get_train_set()))
     # transmission = calculate_transmission(get_word_tag_full_list(get_train_set()))
     # print(viterbi_algorithm(["The","I","am"],transmission,emission))
+    print('strat')
     print(calculate_with_viterbi())
